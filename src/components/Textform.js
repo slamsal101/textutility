@@ -1,51 +1,112 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+
+const TextButtons = React.memo(function TextButtons({
+  onUpper,
+  onLower,
+  onCopy,
+  onExtraSpaces,
+  onClear,
+}) {
+  console.log("TextButtons rendered");
+  return (
+    <div>
+      <button className="btn btn-primary mx-1" onClick={onUpper}>
+        Convert to Uppercase
+      </button>
+      <button className="btn btn-secondary mx-1" onClick={onLower}>
+        Convert to Lowercase
+      </button>
+      <button className="btn btn-success mx-1" onClick={onCopy}>
+        Copy Text
+      </button>
+      <button className="btn btn-danger mx-1" onClick={onExtraSpaces}>
+        Remove Extra Spaces
+      </button>
+      <button className="btn btn-danger mx-1" onClick={onClear}>Clear Text</button>
+    </div>
+  );
+});
 
 export default function TextForm(props) {
-  const [text, setText] = useState('Enter text here');
+  const [text, setText] = useState("Enter text here");
 
-  // Convert to Uppercase
-  const handleUpClick = () => {
-    let newText = text.toUpperCase();
-    setText(newText);
-  };
+  
+  const handleUpClick = useCallback(() => {
+    // convert current text to uppercase (using functional setState is safer)
+    setText((prev) => prev.toUpperCase());
+    // no deps needed because setText is stable and we use functional update
+  }, []);
 
-  // Convert to Lowercase
-  const handleLowClick = () => {
-    let newText = text.toLowerCase();
-    setText(newText);
-  };
+  const handleLowClick = useCallback(() => {
+    setText((prev) => prev.toLowerCase());
+  }, []);
 
-  // Copy text to Clipboard
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
-  };
+  const handleClearClick = useCallback(() => {
+    setText("");
+  }, []);
 
-  // Remove Extra Spaces
-  const handleExtraSpaces = () => {
-    let newText = text.split(/[ ]+/).join(" "); // regex replaces multiple spaces with one
-    setText(newText.trim());
-  };
+  // handleCopy needs current `text` so include it in deps
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        // optional non-blocking feedback
+        // console.log("Copied to clipboard");
+      },
+      (err) => {
+        console.error("Copy failed", err);
+      }
+    );
+  }, [text]);
 
-  //  Handle user typing
-  const handleOnChange = (event) => {
+  // use functional update to compute new text from previous value
+  const handleExtraSpaces = useCallback(() => {
+    setText((prev) => prev.split(/[ ]+/).join(" ").trim());
+  }, []);
+
+  // onChange handler (stable)
+  const handleOnChange = useCallback((event) => {
     setText(event.target.value);
-  };
+  }, []);
 
-  //  Optional alert when too long
+  
+
+  // Derived values (memoized with useMemo)
+  
+
+  // Trimmed text used by multiple derived values
+  const trimmedText = useMemo(() => text.trim(), [text]);
+
+  const wordCount = useMemo(() => {
+    return trimmedText === "" ? 0 : trimmedText.split(/\s+/).length;
+  }, [trimmedText]);
+
+  const charCount = useMemo(() => text.length, [text]);
+
+  // approximate reading time (minutes)
+  const readingTime = useMemo(() => {
+    // 0.008 minutes per word = ~125 words/min (approx)
+    return (wordCount * 0.008).toFixed(2);
+  }, [wordCount]);
+
+  
+
+  // Side effects
+  
+
   useEffect(() => {
-    if (text.length >= 50) {
-      console.log('Text is too long!');
+    if (text.length === 50) {
+      alert("Text is too long!");
     }
   }, [text]);
 
-  //  Word count
-  const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-
+  
+  // Render
+  
   return (
     <>
       <div className="container">
         <h1>{props.heading}</h1>
+
         <div className="mb-3">
           <textarea
             className="form-control"
@@ -56,26 +117,26 @@ export default function TextForm(props) {
           ></textarea>
         </div>
 
-        {/* ---All buttons --- */}
-        <button className="btn btn-primary mx-1" onClick={handleUpClick}>
-          Convert to Uppercase
-        </button>
-        <button className="btn btn-secondary mx-1" onClick={handleLowClick}>
-          Convert to Lowercase
-        </button>
-        <button className="btn btn-success mx-1" onClick={handleCopy}>
-          Copy Text
-        </button>
-        <button className="btn btn-danger mx-1" onClick={handleExtraSpaces}>
-          Remove Extra Spaces
-        </button>
+        {/* memoized button component */}
+        <TextButtons
+          onUpper={handleUpClick}
+          onLower={handleLowClick}
+          onCopy={handleCopy}
+          onExtraSpaces={handleExtraSpaces}
+          onClear={handleClearClick}
+        />
       </div>
 
-      {/* ---Summary Section --- */}
       <div className="container my-3">
         <h1>Your Text Summary</h1>
-        <p>{wordCount} words and {text.length} characters</p>
+        <p>
+          {wordCount} words and {charCount} characters
+        </p>
+        <p>Estimated read time: {readingTime} minutes</p>
+        <h2>Preview</h2>
+        <p>{text}</p>
       </div>
     </>
   );
 }
+
