@@ -1,31 +1,71 @@
-import React from 'react'
+import React, { useContext } from "react";
+import { ThemeContext } from "../ThemeContext";
 
 export default function Navbar(props) {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
+
   return (
     <div>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div className="container-fluid">
-    <a className="navbar-brand" href="/">{props.title}</a>
-    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span className="navbar-toggler-icon"></span>
-    </button>
-    <div className="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-        <li className="nav-item">
-          <a className="nav-link active" aria-current="page" href="/">Home</a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link" href="/">{props.aboutText}</a>
-        </li>
- 
-      </ul>
-      <form className="d-flex" role="search">
-        <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-        <button className="btn btn-outline-primary" type="submit">Search</button>
-      </form>
+      <nav
+        className={`navbar navbar-expand-lg ${
+          theme === "light" ? "navbar-light bg-light" : "navbar-dark bg-dark"
+        }`}
+      >
+        <div className="container-fluid">
+          <a className="navbar-brand" href="/">
+            {props.title}
+          </a>
+
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+
+          <div className="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              <li className="nav-item">
+                <a className="nav-link active" aria-current="page" href="/">
+                  Home
+                </a>
+              </li>
+
+              <li className="nav-item">
+                <a className="nav-link" href="/">
+                  {props.aboutText}
+                </a>
+              </li>
+            </ul>
+
+            {/* SEARCH FORM */}
+            <form className="d-flex" role="search">
+              <input
+                className="form-control me-2"
+                type="search"
+                placeholder="Search"
+                aria-label="Search"
+              />
+              <button className="btn btn-outline-primary" type="submit">
+                Search
+              </button>
+            </form>
+
+            {/* DARK MODE TOGGLE BUTTON */}
+            <div className="ms-3">
+              <button onClick={toggleTheme} className="btn btn-secondary">
+              {theme === "light" ? "Dark Mode" : "Light Mode"}
+            </button>
+            </div>
+          </div>
+        </div>
+      </nav>
     </div>
-  </div>
-</nav>
-    </div>
-  )
+  );
 }

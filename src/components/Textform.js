@@ -69,7 +69,6 @@ export default function TextForm(props) {
   }, []);
 
   
-
   // Derived values (memoized with useMemo)
   
 
@@ -99,7 +98,6 @@ export default function TextForm(props) {
     }
   }, [text]);
 
-  
   // Render
   
   return (
